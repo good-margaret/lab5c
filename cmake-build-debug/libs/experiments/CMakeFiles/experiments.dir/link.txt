@@ -1,0 +1,2 @@
+C:\mingw\mingw32\bin\ar.exe qc libexperiments.a CMakeFiles/experiments.dir/experiments.c.obj
+C:\mingw\mingw32\bin\ranlib.exe libexperiments.a

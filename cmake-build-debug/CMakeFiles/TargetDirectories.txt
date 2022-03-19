@@ -1,0 +1,8 @@
+C:/Users/1/CLionProjects/lab_5c/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+C:/Users/1/CLionProjects/lab_5c/cmake-build-debug/CMakeFiles/lab_5c.dir
+C:/Users/1/CLionProjects/lab_5c/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/1/CLionProjects/lab_5c/cmake-build-debug/libs/CMakeFiles/edit_cache.dir
+C:/Users/1/CLionProjects/lab_5c/cmake-build-debug/libs/CMakeFiles/rebuild_cache.dir
+C:/Users/1/CLionProjects/lab_5c/cmake-build-debug/libs/experiments/CMakeFiles/experiments.dir
+C:/Users/1/CLionProjects/lab_5c/cmake-build-debug/libs/experiments/CMakeFiles/edit_cache.dir
+C:/Users/1/CLionProjects/lab_5c/cmake-build-debug/libs/experiments/CMakeFiles/rebuild_cache.dir

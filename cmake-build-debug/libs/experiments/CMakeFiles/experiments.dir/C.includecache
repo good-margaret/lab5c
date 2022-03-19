@@ -1,0 +1,24 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+C:/Users/1/CLionProjects/lab_5c/libs/experiments/experiments.c
+experiments.h
+C:/Users/1/CLionProjects/lab_5c/libs/experiments/experiments.h
+stdlib.h
+-
+stdbool.h
+-
+time.h
+-
+memory.h
+-
+
+C:/Users/1/CLionProjects/lab_5c/libs/experiments/experiments.h
+stdio.h
+-
+

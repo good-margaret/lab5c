@@ -106,7 +106,7 @@ size_t separatePosFromNeg(int *a, size_t size) {
         firstNotNegIndex++;
 
     for (size_t i = firstNotNegIndex + 1; i < size; i++)
-        if(a[i] < 0)
+        if (a[i] < 0)
             swap(&a[firstNotNegIndex++], &a[i]);
 
     return firstNotNegIndex;
@@ -228,7 +228,61 @@ void shellSort(int *a, const size_t size) {
         }
 }
 
-void generateRandomArray (int *a, size_t n) {
+void insertHeap(int *a, size_t *size, int x) {
+    a[(*size)++] = x;
+    size_t childIndex = *size - 1;
+    size_t parentIndex = (childIndex - 1) / 2;
+    while (a[childIndex] < a[parentIndex] && childIndex != 0) {
+        swap(&a[childIndex], &a[parentIndex]);
+        childIndex = parentIndex;
+        parentIndex = (childIndex - 1) / 2;
+    }
+}
+
+bool hasLeftChild(size_t parentIndex, size_t size) {
+    return 2 * parentIndex + 1 < size;
+}
+
+bool hasRightChild(size_t parentIndex, size_t size) {
+    return 2 * parentIndex + 2 < size;
+}
+
+size_t getLeftChildIndex(size_t parentIndex) {
+    return 2 * parentIndex + 1;
+}
+
+size_t getMinChildIndex(const int *a, size_t size, size_t parentIndex) {
+    size_t minChildIndex = getLeftChildIndex(parentIndex);
+    size_t rightChildIndex = minChildIndex + 1;
+    if (hasRightChild(parentIndex, size))
+        if (a[rightChildIndex] < a[minChildIndex])
+            minChildIndex = rightChildIndex;
+    return minChildIndex;
+}
+
+void removeMinHeap(int *a, size_t *size) {
+    *size -= 1;
+    swap(&a[0], &a[*size]);
+    size_t parentIndex = 0;
+    while (hasLeftChild(parentIndex, *size)) {
+        size_t minChildIndex = getMinChildIndex(a, *size, parentIndex);
+        if (a[minChildIndex] < a[parentIndex]) {
+            swap(&a[minChildIndex], &a[parentIndex]);
+            parentIndex = minChildIndex;
+        } else
+            break;
+    }
+}
+
+void heapSort(int *a, size_t size) {
+    size_t heapSize = 0;
+    while (heapSize != size)
+        insertHeap(a, &heapSize, a[heapSize]);
+    while (heapSize)
+        removeMinHeap(a, &heapSize);
+}
+
+void generateRandomArray(int *a, size_t n) {
     srand(time(NULL));
     for (int i = 0; i < n; i++)
         a[i] = rand();
@@ -241,7 +295,7 @@ void generateOrderedArray(int *a, size_t n) {
 
 void generateOrderedBackwards(int *a, size_t n) {
     for (int i = n - 1; i >= 0; i--)
-         a[i] = i;
+        a[i] = i;
 }
 
 
@@ -256,7 +310,7 @@ void checkTime(void (*sortFunc)(int *, size_t), void (*generateFunc)(int *, size
     printf(" Name : %s\n", experimentName);
     // замер времени
     double time;
-    TIME_TEST({sortFunc(innerBuffer, size);}, time );
+    TIME_TEST({ sortFunc(innerBuffer, size); }, time);
     // результаты замера
     printf(" Status : ");
     if (isOrdered(innerBuffer, size)) {
@@ -287,20 +341,19 @@ void timeExperiment() {
     SortFunc sorts[] = {
             {selectionSort, "selectionSort"},
             {insertionSort, "insertionSort"},
-            {bubbleSort, "bubbleSort"},
-            {shellSort, "shellSort"},
-            {combSort, "combSort"},
-            {radixSort, "radixSort"},
-
-            //{}
+            {bubbleSort,    "bubbleSort"},
+            {shellSort,     "shellSort"},
+            {combSort,      "combSort"},
+            {radixSort,     "radixSort"},
+            {heapSort, "heapSort"}
     };
     const unsigned FUNCS_N = ARRAY_SIZE(sorts);
     // описание функций генерации
     GeneratingFunc generatingFuncs[] = {
             // генерируется случайный массив
-            {generateRandomArray, "random"},
+            {generateRandomArray,      "random"},
             // генерируется массив 0, 1, 2, ..., n - 1
-            {generateOrderedArray, "ordered"},
+            {generateOrderedArray,     "ordered"},
             // генерируется массив n - 1, n - 2, ..., 0
             {generateOrderedBackwards, "orderedBackwards"}
     };

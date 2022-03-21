@@ -41,8 +41,10 @@ void countSort(int *a, size_t size);
 
 int getByte (int someNumber, int bytePos);
 
-void radixSortPositives(int *a, const size_t size);
+void radixSortPositives(int *a, size_t size);
 
 void radixSort (int *a, size_t size);
+
+void timeExperiment();
 
 #endif //LAB_5C_EXPERIMENTS_H

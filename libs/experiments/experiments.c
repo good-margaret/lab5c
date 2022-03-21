@@ -28,12 +28,24 @@ void outputArray_(const int *const a, const size_t n) {
     printf("\n");
 }
 
-bool isOrdered(const int *a, size_t size) {
+bool isOrderedNonDecreasing(const int *a, size_t size) {
     for (size_t i = 1; i < size; i++)
         if (a[i] < a[i - 1])
             return false;
 
     return true;
+}
+
+bool isOrderedNonIncreasing(const int *a, size_t size) {
+    for (size_t i = 1; i < size; i++)
+        if (a[i] > a[i - 1])
+            return false;
+
+    return true;
+}
+
+bool isOrdered(const int *a, size_t size) {
+    return isOrderedNonDecreasing(a, size) || isOrderedNonIncreasing(a, size);
 }
 
 void swap(int *a, int *b) {

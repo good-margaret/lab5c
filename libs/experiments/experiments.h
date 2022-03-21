@@ -23,6 +23,12 @@ typedef struct GeneratingFunc {
     char name[64];
 } GeneratingFunc;
 
+typedef struct SortFuncNComps {
+    long long (*sort)(int *a, size_t n);
+
+    char name[64];
+} SortFuncNComps;
+
 void generateRandomArray (int *a, size_t n);
 
 void outputArray_(const int *a, size_t n);
@@ -46,5 +52,7 @@ void radixSortPositives(int *a, size_t size);
 void radixSort (int *a, size_t size);
 
 void timeExperiment();
+
+void timeExperimentNComps();
 
 #endif //LAB_5C_EXPERIMENTS_H

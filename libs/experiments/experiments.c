@@ -84,6 +84,41 @@ void countSort(int *a, const size_t size) {
     free(b);
 }
 
+long long getMinMaxNComps(const int *a, size_t size, int *min, int *max) {
+    *min = a[0];
+    *max = a[0];
+
+    long long nComps = 0;
+    for (int i = 1; ++nComps && i < size; i++)
+        if (++nComps && a[i] < *min)
+            *min = a[i];
+        else if (++nComps && a[i] > *max)
+            *max = a[i];
+
+    return nComps;
+}
+
+long long countSortNComps(int *a, const size_t size) {
+    int min, max;
+    long long nComps = getMinMaxNComps(a, size, &min, &max);
+    int k = max - min + 1;
+
+    int *b = (int *) calloc(k, sizeof(int));
+    for (int i = 0;  ++ nComps && i < size; i++)
+        b[a[i] - min]++;
+
+    int ind = 0;
+    for (int i = 0;  ++nComps && i < k; i++) {
+        int x = b[i];
+        for (int j = 0; ++nComps && j < x; j++)
+            a[ind++] = min + i;
+    }
+
+    free(b);
+
+    return nComps;
+}
+
 int getByte(int someNumber, int bytePos) {
     int shift = bytePos * BITES_IN_BYTE;
     return (someNumber & EIGHT_BITES_SET_AS_ONE << shift) >> shift;
@@ -129,12 +164,6 @@ void changeSign(int *a, size_t size) {
         a[i] = -a[i];
 }
 
-void reverse(int *a, size_t size) {
-    size_t half = size / 2;
-    for (int i = 0; i < half; i++)
-        swap(&a[i], &a[size - i - 1]);
-}
-
 void radixSortPositivesNonIncreasing(int *a, const size_t size) {
     int *b = (int *) malloc(sizeof(int) * size);
 
@@ -167,6 +196,90 @@ void radixSort(int *a, size_t size) {
     radixSortPositives(a + firstNotNegIndex, size - firstNotNegIndex);
 }
 
+long long radixSortPositivesNComps(int *a, const size_t size) {
+    int *b = (int *) malloc(sizeof(int) * size);
+
+    long long nComps = 0;
+    for (int i = 0; ++nComps && i < sizeof(int); i++) {
+        int *c = (int *) calloc(EIGHT_BITES_SET_AS_ONE + 1, sizeof(int));
+        for (size_t j = 0; ++nComps && j < size; j++)
+            c[getByte(a[j], i)]++;
+
+        for (int j = 1; ++nComps && j < EIGHT_BITES_SET_AS_ONE + 1; j++)
+            c[j] += c[j - 1];
+
+        for (size_t j = size; ++nComps && j > 0; j--)
+            b[c[getByte(a[j - 1], i)]-- - 1] = a[j - 1];
+
+        memcpy(a, b, sizeof(int) * size);
+
+        free(c);
+    }
+
+    free(b);
+
+    return nComps;
+}
+
+size_t separatePosFromNegNComps(int *a, size_t size, long long *nComps) {
+    size_t firstNotNegIndex = 0;
+
+    while (++nComps && firstNotNegIndex < size && a[firstNotNegIndex] < 0)
+        firstNotNegIndex++;
+
+    for (size_t i = firstNotNegIndex + 1; ++nComps && i < size; i++)
+        if (++nComps && a[i] < 0)
+            swap(&a[firstNotNegIndex++], &a[i]);
+
+    return firstNotNegIndex;
+}
+
+long long changeSignNComps(int *a, size_t size) {
+    long long nComps = 0;
+    for (int i = 0; ++nComps && i < size; i++)
+        a[i] = -a[i];
+
+    return nComps;
+}
+
+long long radixSortPositivesNonIncreasingNComps(int *a, const size_t size) {
+    int *b = (int *) malloc(sizeof(int) * size);
+
+    long long nComps = 0;
+    for (int i = 0; ++nComps && i < sizeof(int); i++) {
+        int *c = (int *) calloc(EIGHT_BITES_SET_AS_ONE + 1, sizeof(int));
+        for (size_t j = 0; ++nComps && j < size; j++)
+            c[getByte(a[j], i)]++;
+
+        for (int j = EIGHT_BITES_SET_AS_ONE - 1; ++nComps && j >= 0; j--)
+            c[j] += c[j + 1];
+
+        for (size_t j = size; ++nComps && j > 0; j--)
+            b[c[getByte(a[j - 1], i)]-- - 1] = a[j - 1];
+
+        memcpy(a, b, sizeof(int) * size);
+
+        free(c);
+    }
+
+    free(b);
+
+    return nComps;
+}
+
+long long radixSortNComps(int *a, size_t size) {
+    long long nComps = 0;
+    size_t firstNotNegIndex = separatePosFromNegNComps(a, size, &nComps);
+
+    nComps += changeSignNComps(a, size);
+    nComps += radixSortPositivesNonIncreasingNComps(a, firstNotNegIndex);
+    nComps += changeSignNComps(a, size);
+
+    nComps += radixSortPositivesNComps(a + firstNotNegIndex, size - firstNotNegIndex);
+
+    return nComps;
+}
+
 void bubbleSort(int *a, size_t size) {
     for (size_t i = 0; i < size - 1; i++) {
         bool noSwap = true;
@@ -179,6 +292,24 @@ void bubbleSort(int *a, size_t size) {
         if (noSwap)
             break;
     }
+}
+
+long long bubbleSortNComps(int *a, size_t size) {
+    long long nComps = 0;
+
+    for (size_t i = 0; ++nComps && i < size - 1; i++) {
+        bool noSwap = true;
+        for (size_t j = size - 1; ++nComps && j > i; j--)
+            if (++nComps && a[j - 1] > a[j]) {
+                swap(&a[j - 1], &a[j]);
+                noSwap = false;
+            }
+
+        if (++nComps && noSwap)
+            break;
+    }
+
+    return nComps;
 }
 
 void combSort(int *a, const size_t size) {
@@ -196,6 +327,25 @@ void combSort(int *a, const size_t size) {
     }
 }
 
+long long combSortNComps(int *a, const size_t size) {
+    long long nComps = 0;
+
+    size_t step = size;
+    bool swapped = true;
+    while (++nComps && step > 1 || swapped) {
+        if (++nComps && step > 1)
+            step /= STEP_CHANGER;
+        swapped = false;
+        for (size_t i = 0, j = i + step; ++nComps && j < size; ++i, ++j)
+            if (++nComps && a[i] > a[j]) {
+                swap(&a[i], &a[j]);
+                swapped = true;
+            }
+    }
+
+    return nComps;
+}
+
 void selectionSort(int *a, const size_t size) {
     for (int i = 0; i < size - 1; i++) {
         size_t indexMin = i;
@@ -206,6 +356,22 @@ void selectionSort(int *a, const size_t size) {
 
         swap(&a[i], &a[indexMin]);
     }
+}
+
+long long selectionSortNComps(int *a, const size_t size) {
+    long long nComps = 0;
+
+    for (int i = 0; ++nComps && i < size - 1; i++) {
+        size_t indexMin = i;
+
+        for (int j = i; ++nComps && j < size; j++)
+            if (++nComps && a[j] < a[indexMin])
+                indexMin = j;
+
+        swap(&a[i], &a[indexMin]);
+    }
+
+    return nComps;
 }
 
 void insertionSort(int *a, const size_t size) {
@@ -219,6 +385,23 @@ void insertionSort(int *a, const size_t size) {
 
         a[j] = key;
     }
+}
+
+long long insertionSortNComps(int *a, const size_t size) {
+    long long nComps = 0;
+
+    for (size_t i = 1; ++nComps && i < size; i++) {
+        int key = a[i];
+        size_t j = i;
+        while (++nComps && j > 0 && a[j - 1] > key) {
+            a[j] = a[j - 1];
+            j--;
+        }
+
+        a[j] = key;
+    }
+
+    return nComps;
 }
 
 void shellSort(int *a, const size_t size) {
@@ -238,6 +421,29 @@ void shellSort(int *a, const size_t size) {
 
             a[j] = key;
         }
+}
+
+long long shellSortNComps(int *a, const size_t size) {
+    long long nComps = 0;
+
+    for (size_t step = size / 2; ++nComps && step > 0; step /= 2)
+        for (size_t i = step; ++nComps && i < size; i++) {
+            int key = a[i];
+
+            size_t j = i;
+            while (++nComps && j >= step) {
+                if (++nComps && key < a[j - step])
+                    a[j] = a[j - step];
+                else
+                    break;
+
+                j -= step;
+            }
+
+            a[j] = key;
+        }
+
+    return nComps;
 }
 
 void insertHeap(int *a, size_t *size, int x) {
@@ -294,6 +500,60 @@ void heapSort(int *a, size_t size) {
         removeMinHeap(a, &heapSize);
 }
 
+long long insertHeapNComps(int *a, size_t *size, int x) {
+    long long nComps = 0;
+
+    a[(*size)++] = x;
+    size_t childIndex = *size - 1;
+    size_t parentIndex = (childIndex - 1) / 2;
+    while (++nComps && a[childIndex] < a[parentIndex] && childIndex != 0) {
+        swap(&a[childIndex], &a[parentIndex]);
+        childIndex = parentIndex;
+        parentIndex = (childIndex - 1) / 2;
+    }
+
+    return nComps;
+}
+
+size_t getMinChildIndexNComps(const int *a, size_t size, size_t parentIndex, long long *nComps) {
+    size_t minChildIndex = getLeftChildIndex(parentIndex);
+    size_t rightChildIndex = minChildIndex + 1;
+    if (++nComps && hasRightChild(parentIndex, size))
+        if (++nComps && a[rightChildIndex] < a[minChildIndex])
+            minChildIndex = rightChildIndex;
+    return minChildIndex;
+}
+
+long long removeMinHeapNComps(int *a, size_t *size) {
+    long long nComps = 0;
+
+    *size -= 1;
+    swap(&a[0], &a[*size]);
+    size_t parentIndex = 0;
+    while (++nComps && hasLeftChild(parentIndex, *size)) {
+        size_t minChildIndex = getMinChildIndexNComps(a, *size, parentIndex, &nComps);
+        if (++nComps && a[minChildIndex] < a[parentIndex]) {
+            swap(&a[minChildIndex], &a[parentIndex]);
+            parentIndex = minChildIndex;
+        } else
+            break;
+    }
+
+    return nComps;
+}
+
+long long heapSortNComps(int *a, size_t size) {
+    long long nComps = 0;
+
+    size_t heapSize = 0;
+    while (++nComps && heapSize != size)
+        nComps += insertHeapNComps(a, &heapSize, a[heapSize]);
+    while (++nComps && heapSize)
+        nComps += removeMinHeapNComps(a, &heapSize);
+
+    return nComps;
+}
+
 void generateRandomArray(int *a, size_t n) {
     srand(time(NULL));
     for (int i = 0; i < n; i++)
@@ -310,7 +570,6 @@ void generateOrderedBackwards(int *a, size_t n) {
         a[i] = i;
 }
 
-
 void checkTime(void (*sortFunc)(int *, size_t), void (*generateFunc)(int *, size_t),
                size_t size, char *experimentName) {
     static size_t runCounter = 1;
@@ -322,7 +581,7 @@ void checkTime(void (*sortFunc)(int *, size_t), void (*generateFunc)(int *, size
     printf(" Name : %s\n", experimentName);
     // замер времени
     double time;
-    TIME_TEST({ sortFunc(innerBuffer, size); }, time);
+    TIME_TEST({sortFunc(innerBuffer, size);}, time);
     // результаты замера
     printf(" Status : ");
     if (isOrdered(innerBuffer, size)) {
@@ -330,13 +589,52 @@ void checkTime(void (*sortFunc)(int *, size_t), void (*generateFunc)(int *, size
 
         // запись в файл
         char filename[256];
-        sprintf(filename, "./data/%s.csv", experimentName); //filename -> name
+        sprintf(filename, "./data/%s.csv", experimentName);
         FILE *f = fopen(filename, "a");
         if (f == NULL) {
             printf(" FileOpenError %s", filename);
             exit(1);
         }
         fprintf(f, "%zu; %.3f\n", size, time);
+        fclose(f);
+    } else {
+        printf(" Wrong!\n");
+
+        // вывод массива, который не смог быть отсортирован
+        outputArray_(innerBuffer, size);
+
+        exit(1);
+    }
+}
+
+void checkNComps(long long (*sortFunc)(int *, size_t), void (*generateFunc)(int *, size_t),
+               size_t size, char *experimentName) {
+    static size_t runCounter = 1;
+
+    // генерация последовательности
+    static int innerBuffer[100000];
+    generateFunc(innerBuffer, size);
+    printf("Run #%zu| ", runCounter++);
+    printf(" Name : %s\n", experimentName);
+
+    long long nComps = sortFunc(innerBuffer, size);
+
+    //double time;
+    //TIME_TEST({sortFunc(innerBuffer, size);}, time);
+    // результаты замера
+    printf(" Status : ");
+    if (isOrdered(innerBuffer, size)) {
+        printf("OK! Number of comparisons : %lld\n", nComps);
+
+        // запись в файл
+        char filename[256];
+        sprintf(filename, "./data/%s.csv", experimentName);
+        FILE *f = fopen(filename, "a");
+        if (f == NULL) {
+            printf(" FileOpenError %s", filename);
+            exit(1);
+        }
+        fprintf(f, "%zu; %lld\n", size, nComps);
         fclose(f);
     } else {
         printf(" Wrong!\n");
@@ -382,6 +680,48 @@ void timeExperiment() {
                 sprintf(filename, "%s_%s_time ",
                         sorts[i].name, generatingFuncs[j].name);
                 checkTime(sorts[i].sort,
+                          generatingFuncs[j].generate,
+                          size, filename);
+            }
+        }
+        printf("\n");
+    }
+}
+
+void timeExperimentNComps() {
+    // описание функций сортировки
+    SortFuncNComps sorts[] = {
+            {selectionSortNComps, "selectionSort"},
+            {insertionSortNComps, "insertionSort"},
+            {bubbleSortNComps,    "bubbleSort"},
+            {shellSortNComps,     "shellSort"},
+            {combSortNComps,      "combSort"},
+            {radixSortNComps,     "radixSort"},
+            {heapSortNComps, "heapSort"}
+    };
+    const unsigned FUNCS_N = ARRAY_SIZE(sorts);
+    // описание функций генерации
+    GeneratingFunc generatingFuncs[] = {
+            // генерируется случайный массив
+            {generateRandomArray,      "random"},
+            // генерируется массив 0, 1, 2, ..., n - 1
+            {generateOrderedArray,     "ordered"},
+            // генерируется массив n - 1, n - 2, ..., 0
+            {generateOrderedBackwards, "orderedBackwards"}
+    };
+    const unsigned CASES_N = ARRAY_SIZE(generatingFuncs);
+
+    // запись статистики в файл
+    for (size_t size = 10000; size <= 100000; size += 10000) {
+        printf("-----------------------------------------\n");
+        printf(" Size : %d\n", size);
+        for (int i = 0; i < FUNCS_N; i++) {
+            for (int j = 0; j < CASES_N; j++) {
+                // генерация имени файла
+                static char filename[128];
+                sprintf(filename, "%s_%s_n_comps ",
+                        sorts[i].name, generatingFuncs[j].name);
+                checkNComps(sorts[i].sort,
                           generatingFuncs[j].generate,
                           size, filename);
             }

@@ -2,6 +2,7 @@
 #include "libs/experiments/experiments.h"
 
 int main() {
-    timeExperiment();
+    //timeExperiment();
+    timeExperimentNComps();
     return 0;
 }
